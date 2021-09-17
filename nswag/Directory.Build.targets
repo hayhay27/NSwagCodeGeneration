@@ -1,0 +1,79 @@
+<Project>
+  <PropertyGroup>
+    <CoreCompileDependsOn>NSwagController_Compile;$(CoreCompileDependsOn)</CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)NSwagController.CSharp.xml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <NSwagController>
+      <ControllerStyle Condition="'%(NSwagController.ControllerStyle)' == '' ">partial</ControllerStyle>
+      <Namespace Condition="'%(NSwagController.Namespace)' == ''">$(RootNamespace)</Namespace>
+      <OutputDir Condition="'%(NSwagController.OutputDir)' == ''">$(IntermediateOutputPath)</OutputDir>
+      <UseLiquidTemplates Condition="'%(NSwagController.UseLiquidTemplates)' == ''">true</UseLiquidTemplates>
+      <UseCancellationToken Condition="'%(NSwagController.UseCancellationToken)' == ''">true</UseCancellationToken>
+      <GenerateOptionalParameters Condition="'%(NSwagController.GenerateOptionalParameters)' == ''">true</GenerateOptionalParameters>
+      <Generator>MSBuild:Compile</Generator>
+    </NSwagController>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(NSwagController)" />
+  </ItemGroup>
+
+  <Target Name="_NSwagController_Generate"
+          Condition="'@(NSwagController)' != ''">
+
+    <ItemGroup>
+      <NSwagController>
+        <ClassName Condition="'%(NSwagController.ClassName)' == ''">%(NSwagController.Filename)</ClassName>
+      </NSwagController>
+      <NSwagController>
+        <OutputFile Condition="'%(NSwagController.OutputFile)' == ''">$(IntermediateOutputPath)NSwagControllers\%(NSwagController.ClassName).g.cs</OutputFile>
+      </NSwagController>
+    </ItemGroup>
+    
+  </Target>
+  
+  <Target Name="NSwagController_Generate"
+          BeforeTargets="PrepareForBuild"
+          DependsOnTargets="_NSwagController_Generate"
+          Inputs="$(MSBuildProjectFile);@(NSwagController)"
+          Outputs="@(NSwagController->'%(OutputFile)')"
+          Condition="'@(NSwagController)' != ''">
+
+    <Message Text="@(NSwagController)" Importance="high" />
+    <Message Text="@(NSwagController->'%(OutputFile)')" Importance="high" />
+
+    <Exec Command="$(NSwagExe_Net50) openapi2cscontroller ^
+          /input:%(NSwagController.Identity) ^
+          /classname:%(NSwagController.ClassName) ^
+          /namespace:%(NSwagController.Namespace) ^
+          /UseLiquidTemplates:%(NSwagController.UseLiquidTemplates) ^
+          /UseCancellationToken:%(NSwagController.UseCancellationToken) ^
+          /ControllerStyle:%(NSwagController.ControllerStyle) ^
+          /AspNetNamespace:&quot;Microsoft.AspNetCore.Mvc&quot; ^
+          /GenerateOptionalParameters:%(NSwagController.GenerateOptionalParameters) ^
+          /output:%(NSwagController.OutputFile) ^
+          /ControllerBaseClass:&quot;Microsoft.AspNetCore.Mvc.ControllerBase&quot;" />
+  </Target>
+
+  <Target Name="NSwagController_Compile">
+    <ItemGroup>
+      <Compile Include="@(NSwagController->'%(OutputFile)')"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_NSwag_SourceFilesProjectOutputGroup"
+        BeforeTargets="SourceFilesProjectOutputGroup"
+        Condition=" '@(NSwagController)' != '' " >
+    <ItemGroup>
+      <SourceFilesProjectOutputGroupOutput Include="@(NSwagController->'%(FullPath)')" />
+    </ItemGroup>
+  </Target>
+  
+</Project>

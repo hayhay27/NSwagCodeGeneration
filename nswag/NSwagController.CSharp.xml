@@ -1,0 +1,40 @@
+﻿<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <FileExtension Name=".yml"
+               ContentType="OpenApiFile" />
+
+  <ContentType Name="OpenApiFile"
+               DisplayName="Open API specification file"
+               ItemType="NSwagController" />
+
+  <ItemType Name="NSwagController"
+            DisplayName="NSwag controller compiler" />
+  
+  <Rule Name="NSwagController"
+        DisplayName="File Properties"
+        PageTemplate="generic"
+        Description="File Properties"
+        OverrideMode="Extend">
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" Label="Configuration" ItemType="NSwagController"
+                  HasConfigurationCondition="false" SourceOfDefaultValue="AfterContext" />
+    </Rule.DataSource>
+
+    <Rule.Categories>
+      <Category Name="Advanced" DisplayName="Advanced" />
+      <Category Name="NSwag" DisplayName="NSwag" />
+      <Category Name="Misc" DisplayName="Misc" />
+    </Rule.Categories>
+
+    <EnumProperty Name="ControllerStyle" DisplayName="Generation type"
+                  Category="NSwag" Default="partial"
+                  Description="Generate partial or abstract stub.">
+      <EnumValue Name="partial" DisplayName="Partial class" IsDefault="true" />
+      <EnumValue Name="abstract" DisplayName="Abstract class" />
+      <EnumProperty.DataSource>
+        <DataSource ItemType="NSwagController" SourceOfDefaultValue="AfterContext"
+                    PersistenceStyle="Attribute" HasConfigurationCondition="false" />
+      </EnumProperty.DataSource>
+    </EnumProperty>
+
+  </Rule>
+</ProjectSchemaDefinitions>
